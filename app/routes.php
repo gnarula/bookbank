@@ -13,5 +13,9 @@
 
 Route::get('/', function()
 {
-	return View::make('hello');
+	return View::make('index');
 });
+
+Route::controller('users', 'UserController');
+Route::controller('student', 'StudentController');
+Route::controller('admin', 'AdminController');
