@@ -35,9 +35,32 @@ App::after(function($request, $response)
 
 Route::filter('auth', function()
 {
-	if (Auth::guest()) return Redirect::guest('login');
+	if (Auth::guest()) return Redirect::guest('/');
 });
 
+Route::filter('auth.student', function()
+{
+    if(Auth::guest()) {
+        return Redirect::guest('/');
+    }
+    else {
+        if(strcmp(Auth::user()->id, 'admin') == 0) {
+            return Redirect::to('/admin');
+        }
+    }
+});
+
+Route::filter('auth.admin', function()
+{
+    if(Auth::guest()) {
+        return Redirect::guest('/');
+    }
+    else {
+        if(strcmp(Auth::user()->id, 'admin') != 0) {
+            return Redirect::to('/student');
+        }
+    }
+});
 
 Route::filter('auth.basic', function()
 {

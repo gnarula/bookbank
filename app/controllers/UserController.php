@@ -3,6 +3,7 @@
 class UserController extends BaseController {
     public function __construct() {
         $this->beforeFilter('csrf', array('on' => 'post'));
+        $this->beforeFilter('auth', array('only' => array('getLogout')));
     }
 
     public function postCreate() {
@@ -29,5 +30,23 @@ class UserController extends BaseController {
             $data['message'] = 'Details invalid or user has already registered';
         }
         return Response::json($data);
+    }
+
+    public function postLogin() {
+        if(Auth::attempt(array('id' => Input::get('id'), 'password' => Input::get('password')))) {
+            if(strcmp(Input::get('id'), 'admin') == 0) {
+                return Redirect::to('admin/');
+            }
+            return Redirect::to('student/');
+        }
+        $data['success'] = false;
+        $data['message'] = 'Invalid credentials';
+
+        return Response::json($data);
+    }
+
+    public function getLogout() {
+        Auth::Logout();
+        return Redirect::to('/');
     }
 }
