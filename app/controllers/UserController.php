@@ -31,3 +31,4 @@ class UserController extends BaseController {
         return Response::json($data);
     }
 }
+
