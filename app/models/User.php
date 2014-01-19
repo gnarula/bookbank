@@ -11,7 +11,7 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
 		'name' => 'required',
 		'mobile' => 'required|digits:10',
 		'email' => 'required|email|regex:/^f20[0-9]{5}@goa.bits-pilani.ac.in$/|unique:users',
-		'hostel' => array('required', 'regex:/^(AH[0-8])|(CH[0-6])$/'),
+		'hostel' => array('required', 'regex:/^(AH[1-8])|(CH[1-6])$/'),
 		'room_no' => 'required|numeric'
 		);
 	/**
