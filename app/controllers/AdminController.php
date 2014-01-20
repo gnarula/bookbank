@@ -124,4 +124,76 @@ class AdminController extends BaseController {
 
         return Response::json($data);
     }
+
+    public function getSearch() {
+        return View::make('admin.search');
+    }
+
+    /*
+        todo: cleanup
+        Params expected (one or more) - book_id, book_name, student_name, student_id
+    */
+    public function postSearch() {
+        $query = DB::table('books');
+        $joined = false;
+        $select = array('books.id', 'books.name', 'books.author', 'books.edition', 'books.branch', 'books.available');
+
+        if(!empty(Input::get('book_id'))) {
+            $query->where('books.id', '=', Input::get('book_id'));
+
+            if(!empty(Input::get('book_name'))) {
+               $query->where('books.name', 'like', '%'.Input::get('book_name').'%');
+            }
+            if(!empty(Input::get('student_id'))) {
+                $query->join('books_issued', 'books_issued.book_id', '=', 'books.id')->join('users', 'books_issued.user_id', '=', 'users.id')
+                    ->where('users.id', 'like', '%'.Input::get('student_id').'%');
+                array_push($select, 'users.name as user_name', 'users.id as user_id');
+                $joined = true;
+            }
+            if(!empty(Input::get('student_name'))) {
+                if($joined) {
+                    $query->where('users.name', 'like', '%'.Input::get('student_name').'%');
+                }
+                else {
+                    $query->join('books_issued', 'books_issued.book_id', '=', 'books.id')->join('users', 'books_issued.user_id', '=', 'users.id')
+                        ->where('users.name', 'like', '%'.Input::get('student_name').'%');
+                    array_push($select, 'users.name as user_name', 'users.id as user_id');
+                }
+            }
+        }
+        else if(!empty(Input::get('book_name'))) {
+            $query->where('books.name', 'like', '%'.Input::get('book_name').'%');
+
+            if(!empty(Input::get('student_id'))) {
+                $query->join('books_issued', 'books_issued.book_id', '=', 'books.id')->join('users', 'books_issued.user_id', '=', 'users.id')
+                    ->select('users.name', 'users.id');
+                $joined = true;
+            }
+            if(!empty(Input::get('student_name'))) {
+                if($joined) {
+                    $query->where('users.name', 'like', '%'.Input::get('student_name').'%');
+                }
+                else {
+                    $query->join('books_issued', 'books_issued.book_id', '=', 'books.id')->join('users', 'books_issued.user_id', '=', 'users.id')->where('users', 'users.name', 'like', '%'.Input::get('student_name').'%');
+                    array_push($select, 'users.name as user_name', 'users.id as user_id');
+                }
+            }
+        }
+        else if(!empty(Input::get('student_id'))) {
+            $query->join('books_issued', 'books_issued.book_id', '=', 'books.id')->join('users', 'books_issued.user_id', '=', 'users.id')
+                ->where('users.id', 'like', '%'.Input::get('student_id').'%');
+            array_push($select, 'users.name as user_name', 'users.id as user_id');
+
+            if(!empty(Input::get('student_name'))) {
+                $query->where('users.name', 'like', '%'.Input::get('student_name').'%');
+            }
+        }
+        else if(!empty(Input::get('student_name'))) {
+            $query->join('books_issued', 'books_issued.book_id', '=', 'books.id')->join('users', 'books_issued.user_id', '=', 'users.id')
+                ->where('users.name', 'like', '%'.Input::get('student_name'.'%'));
+            array_push($select, 'users.name as user_name', 'users.id as user_id');
+        }
+
+        return Response::json($query->get($select));
+    }
 }
