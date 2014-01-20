@@ -50,6 +50,7 @@ class AdminController extends BaseController {
 
     public function postReturn() {
         $book_ids = explode(',', Input::get('booknos'));
+        $data = array();
 
         foreach($book_ids as $book_id) {
             try {
@@ -68,6 +69,58 @@ class AdminController extends BaseController {
         BookIssued::destroy($book_ids);
         $data['success'] = true;
         $data['message'] = 'Books returned!';
+
+        return Response::json($data);
+    }
+
+    public function postAdd() {
+        $book_ids = explode(',', Input::get('booknos'));
+        $data = array();
+
+        foreach($book_ids as $book_id) {
+            try {
+                $book = new Book;
+                $book->name = Input::get('name');
+                $book->branch = Input::get('branch');
+                $book->edition = Input::get('edition');
+                $book->author = Input::get('author');
+
+                $book->save();
+            }
+            catch (Exception $e) {
+                $data['success'] = false;
+                $data['message'] = 'An error occured. Check if the book no is unique';
+
+                return Response::json($data);
+            }
+        }
+        $data['success'] = true;
+        $data['message'] = 'Books added successfully';
+
+        return Response::json($data);
+    }
+
+    public function getEdit($book_id) {
+        // todo - add exception for book not found
+        $book = Book::findOrFail($book_id);
+
+        return View::make('admin.edit', compact("book"));
+    }
+
+    public function postUpdate() {
+
+        $book = Book::findorFail(Input::get('id'));
+
+        $book->name = Input::get('name');
+        $book->branch = Input::get('branch');
+        $book->edition = Input::get('edition');
+        $book->author = Input::get('author');
+
+        $book->save();
+
+        $data = array();
+        $data['success'] = true;
+        $data['message'] = 'Book updated';
 
         return Response::json($data);
     }
